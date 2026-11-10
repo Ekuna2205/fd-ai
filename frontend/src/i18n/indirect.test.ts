@@ -18,6 +18,8 @@ const INDIRECT = [
   'Detector', 'Liveness model', 'API', 'Database', 'Model loaded', 'Model trained', 'Users', 'Audit log', 'Time', 'Event', 'User', 'IP', 'Details',
   'Dark', 'Light', 'Manages users, models and datasets', 'Datasets and models', 'Runs verifications', 'Read-only',
   'Challenge passed', 'Challenge failed', 'Challenge timed out', 'Challenge finished', 'passed', 'failed', 'timed out', 'pending', 'in progress',
+  'Place your face inside the frame', 'Slowly turn your head to the right', 'Slowly turn your head to the left',
+  'Move a little closer to the camera', 'Keep your face still', 'Mask',
   'Per day, last {n} days (UTC)', 'Per week, last {n} days (UTC)', 'Per month, last {n} days (UTC)',
 ]
 

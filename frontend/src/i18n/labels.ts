@@ -13,6 +13,6 @@ export const statusLabel = (s: VerificationStatus | string) => translate(STATUS[
 export const roleLabel = (r: Role | string) => translate(ROLE[r as Role] ?? r)
 
 const SPOOF: Record<string, string> = {
-  PRINTED_PHOTO: 'Printed photo', PHONE_SCREEN: 'Phone screen', COMPUTER_SCREEN: 'Computer screen', REPLAY_VIDEO: 'Replay video', OTHER: 'Other',
+  PRINTED_PHOTO: 'Printed photo', PHONE_SCREEN: 'Phone screen', COMPUTER_SCREEN: 'Computer screen', REPLAY_VIDEO: 'Replay video', MASK: 'Mask', OTHER: 'Other',
 }
 export const spoofLabel = (s: string | null | undefined) => (s ? translate(SPOOF[s] ?? s) : '—')

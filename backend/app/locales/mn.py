@@ -130,6 +130,14 @@ SENTENCES: dict[str, str] = {
     "Fewer than 3 identities: train, validation and test cannot all be identity-disjoint.":
         "3-аас цөөн хүн байна: сургалт, баталгаажуулалт, тестийн хэсгүүдийг хүнээр давхцахгүй хуваах боломжгүй.",
     "Frames of the same person in train and test inflate results.": "Нэг хүний кадр сургалт болон тестэд хоёуланд нь орвол үр дүн хэтрүүлэгдэнэ.",
+    # --- public collection ---
+    "This collection link is not valid or has been turned off.": "Энэ цуглуулах холбоос хүчингүй эсвэл хаагдсан байна.",
+    "Thank you!": "Баярлалаа!",
+    "Your recording was added.": "Таны бичлэг нэмэгдлээ.",
+    "Invalid participant id.": "Оролцогчийн ID буруу байна.",
+    "Choose how you tried to deceive the camera.": "Камерыг хэрхэн хуурахыг оролдсоноо сонгоно уу.",
+    "No single face was visible in the recording.": "Бичлэгт нэг нүүр тод харагдсангүй.",
+    "Keep one face inside the frame and try again.": "Кадр дотор нэг нүүр байлгаад дахин оролдоно уу.",
     # --- models ---
     "Model not found.": "Модель олдсонгүй.",
     "Deactivate the model before deleting it.": "Устгахаасаа өмнө моделийг идэвхгүй болгоно уу.",

@@ -50,7 +50,11 @@ class Settings(BaseSettings):
     rate_limit_detect_per_minute: int = Field(600, ge=0)  # live preview frames (~4/s)
     rate_limit_verify_per_minute: int = Field(30, ge=0)  # saved verifications and uploads
     rate_limit_dataset_per_minute: int = Field(300, ge=0)  # dataset image uploads and edits
-    rate_limit_challenge_per_minute: int = Field(20, ge=0)  # issuing/verifying liveness challenges
+    rate_limit_challenge_per_minute: int = Field(20, ge=0)
+    rate_limit_collect_per_minute: int = Field(12, ge=0)  # public collection links, per IP address
+    rate_limit_collect_frame_per_minute: int = Field(600, ge=0)  # live guidance frames on collection links, per IP
+    collect_step_seconds: int = Field(6, ge=3, le=7)  # time allowed for each camera step before moving on
+    collect_frames: int = Field(8, ge=1, le=32)  # single-face frames kept per recording  # issuing/verifying liveness challenges
 
     # Media limits (enforced server-side; the UI reads them from /api/face/capabilities)
     max_image_mb: int = Field(10, ge=1)

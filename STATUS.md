@@ -1,5 +1,14 @@
 # STATUS
 
+## Update: public data-collection links
+- Datasets page → **Collection link** card: turn on, copy link / QR code, rotate, turn off. `/collect/<token>` works without an account.
+- Flow verified in headless Chromium with a fake phone camera (iPhone 13 viewport): label → instructions + consent →
+  camera steps with live guidance → colour flashes → upload → result; 8 labelled frames added; no console errors.
+- Backend 323 passed / 1 skipped, frontend 88 passed. Head-turn detection was exercised only with timeouts (a still
+  test image cannot turn); check it on a real phone.
+
+---
+
 ## Update: Mongolian / English interface
 - Every page, dialog, toast, chart label and validation message of the web app is available in Mongolian and English
   (switch in the header, sign-in page and Settings; remembered in the browser; the first visit follows the browser language).

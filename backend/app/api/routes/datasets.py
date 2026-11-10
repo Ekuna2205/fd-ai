@@ -170,3 +170,19 @@ def export(dataset_id: str, user: Manager, db: DbSession, request: Request,
     if "skipped_no_single_face" in info:
         headers["X-Skipped-No-Face"] = str(info["skipped_no_single_face"])
     return Response(blob, media_type="application/zip", headers=headers)
+
+
+class CollectionUpdate(BaseModel):
+    enabled: bool
+    rotate: bool = False  # issue a new link; the old one stops working
+
+
+@router.put("/{dataset_id}/collect")
+def set_collection(dataset_id: str, body: CollectionUpdate, user: Manager, db: DbSession, request: Request) -> dict:
+    """Public collection link for this dataset: anyone with the link can add labelled recordings (and nothing else)."""
+    with _mapped():
+        d = get_store().set_collection(str(user.id), dataset_id, body.enabled, body.rotate)
+    audit_service.record(db, "dataset.collect_link", user_id=user.id, ip=client_ip(request), entity_type="dataset",
+                         entity_id=dataset_id, details={"enabled": body.enabled, "rotated": body.rotate})  # never the token
+    db.commit()
+    return d

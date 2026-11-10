@@ -3,6 +3,7 @@ import { AlertTriangle, ArrowLeft, CheckCircle2, Download, Loader2, Trash2, Uplo
 import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
+import { CollectLinkCard } from '@/components/CollectLinkCard'
 import { PageHeader } from '@/components/PageHeader'
 import { Button } from '@/components/ui/button'
 import { Card, CardHeader } from '@/components/ui/card'
@@ -86,6 +87,8 @@ export default function DatasetDetailPage() {
         actions={<><Button variant="outline" onClick={() => void doExport('full')} disabled={!!exporting || !d?.images}><Download className="size-4" />{exporting === 'full' ? t('Preparing…') : t('Export ZIP')}</Button>
           <Button variant="outline" onClick={() => void doExport('face')} disabled={!!exporting || !d?.images} title={t('One square face crop per image, as used by face-crop models')}><Download className="size-4" />{exporting === 'face' ? t('Cropping…') : t('Export face crops')}</Button>
           <Button variant="outline" onClick={() => setConfirm('dataset')}><Trash2 className="size-4" />{t('Delete')}</Button></>} />
+
+      {d && <CollectLinkCard dataset={d} onChange={refresh} />}
 
       <section className="grid gap-4 lg:grid-cols-3">
         <Card className="lg:col-span-2">

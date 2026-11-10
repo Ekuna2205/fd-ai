@@ -15,6 +15,7 @@ import RegisterPage from '@/pages/RegisterPage'
 
 const AdminPage = lazy(() => import('@/pages/AdminPage'))
 const ChallengePage = lazy(() => import('@/pages/ChallengePage'))
+const CollectPage = lazy(() => import('@/pages/CollectPage'))
 const DatasetDetailPage = lazy(() => import('@/pages/DatasetDetailPage'))
 const DatasetsPage = lazy(() => import('@/pages/DatasetsPage'))
 const ForgotPasswordPage = lazy(() => import('@/pages/ForgotPasswordPage'))
@@ -55,6 +56,7 @@ export default function App() {
             </Route>
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
             <Route path="/reset-password" element={<ResetPasswordPage />} />
+            <Route path="/collect/:token" element={<CollectPage />} />
             <Route element={<ProtectedRoute />}>
               <Route element={<AppLayout />}>
                 <Route index element={<DashboardPage />} />

@@ -28,6 +28,7 @@ from typing import Callable
 
 LABELS = ("REAL", "FAKE")
 _ID = re.compile(r"^[0-9a-f]{32}$")
+_COLLECT_TOKEN = re.compile(r"^[A-Za-z0-9_-]{16,64}$")
 _SHA = re.compile(r"^[0-9a-f]{64}$")
 _TAG = re.compile(r"^[A-Za-z0-9_.\-]{1,64}$")
 EXT = {"jpeg": ".jpg", "png": ".png"}
@@ -109,9 +110,43 @@ class DatasetStore:
     def _summary(meta: dict) -> dict:
         s = meta["samples"].values()
         c = Counter(x["label"] for x in s)
+        col = meta.get("collect") or {}
         return {"id": meta["id"], "name": meta["name"], "description": meta["description"], "created_at": meta["created_at"],
                 "updated_at": meta["updated_at"], "images": len(meta["samples"]), "real": c["REAL"], "fake": c["FAKE"],
-                "unlabeled": c[None]}
+                "unlabeled": c[None],
+                "collect": {"enabled": bool(col.get("enabled")), "token": col.get("token") if col.get("enabled") else None,
+                            "participants": len({x["identity"] for x in s if x.get("source") == "collect"})}}
+
+    # ---- public collection links (collect.ekyc.mn-style data gathering) ----------------------------------------------
+    def set_collection(self, owner: str, dataset_id: str, enabled: bool, rotate: bool = False) -> dict:
+        """Turns the public collection link on/off. The token is a bearer capability: anyone with the link can ADD
+        labelled recordings to this one dataset, nothing else. `rotate` issues a new token (old links stop working)."""
+        import secrets
+        with self._lock:
+            meta = self._load(owner, dataset_id)
+            col = meta.get("collect") or {}
+            if enabled and (rotate or not col.get("token")):
+                col["token"] = secrets.token_urlsafe(18)
+                col["created_at"] = _now()
+            col["enabled"] = enabled
+            meta["collect"] = col
+            self._save(meta)
+            return self._summary(meta)
+
+    def find_by_token(self, token: str) -> dict | None:
+        """The dataset whose ENABLED collection link has this token, else None. Constant-time comparison."""
+        import hmac
+        if not token or not _COLLECT_TOKEN.match(token):
+            return None
+        for meta_path in self.root.glob("*/dataset.json"):
+            try:
+                meta = json.loads(meta_path.read_text(encoding="utf-8"))
+            except (OSError, json.JSONDecodeError):
+                continue
+            col = meta.get("collect") or {}
+            if col.get("enabled") and col.get("token") and hmac.compare_digest(col["token"], token):
+                return meta
+        return None
 
     # ---- CRUD ----------------------------------------------------------------------------------------------------
     def create(self, owner: str, name: str, description: str = "") -> dict:
@@ -166,7 +201,8 @@ class DatasetStore:
 
     # ---- images --------------------------------------------------------------------------------------------------
     def add_image(self, owner: str, dataset_id: str, filename: str | None, data: bytes, validate: Validator,
-                  label: str | None = None, identity: str | None = None, group: str | None = None) -> dict:
+                  label: str | None = None, identity: str | None = None, group: str | None = None,
+                  source: str | None = None) -> dict:
         import hashlib
         if label not in (None, *LABELS):
             raise DatasetError("label must be REAL or FAKE.")
@@ -191,6 +227,8 @@ class DatasetStore:
             rec = {"ext": ext, "label": label, "identity": identity, "group": group, "size": len(data),
                    "width": w, "height": h, "original_name": re.sub(r"[^\w.\- ]", "_", os.path.basename(filename or "image"))[:120],
                    "added_at": _now()}
+            if source:
+                rec["source"] = source
             meta["samples"][sha] = rec
             self._save(meta)
             return {"sha256": sha, **rec}

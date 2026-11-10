@@ -1,6 +1,7 @@
 export interface DatasetSummary {
   id: string; name: string; description: string; created_at: string; updated_at: string
   images: number; real: number; fake: number; unlabeled: number
+  collect?: { enabled: boolean; token: string | null; participants: number }
 }
 export interface DatasetImage {
   sha256: string; ext: string; label: 'REAL' | 'FAKE' | null; identity: string | null; group: string | null
