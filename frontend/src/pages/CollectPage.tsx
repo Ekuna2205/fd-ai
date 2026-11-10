@@ -32,7 +32,9 @@ const STEP_TEXT: Record<Step, string> = {
 }
 const FLASH = ['#00F5FF', '#FF1A1A', '#FFF200', '#1AFF3C'] // screen colours reflected by a real face
 const FLASH_MS = 750
-const MAX_RECORD_MS = 26_000 // server limit is 30 s
+const MAX_RECORD_MS = 24_000 // server limit is 30 s
+// 640x480 at ~0.7 Mbit/s: a 20 s recording is ~2 MB and decodes quickly even on a free 0.1-CPU / 512 MB server
+const COLLECT_SIZE = { width: 640, height: 480 }
 const TURN = 0.3 // |yaw| that counts as turned (same as the server challenge engine)
 const MIME = ['video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm', 'video/mp4']
 const pickMime = () => (typeof MediaRecorder === 'undefined' ? undefined : MIME.find((m) => MediaRecorder.isTypeSupported(m)))
@@ -182,7 +184,7 @@ function Capture({ token, label, attack, stepSeconds, stage, setStage, onBack, o
   setStage: (s: Stage) => void; onBack: () => void; onDone: (r: CollectResult) => void; onError: (msg: string) => void
 }) {
   const { t } = useT()
-  const cam = useCamera()
+  const cam = useCamera(COLLECT_SIZE)
   const [frame, setFrame] = useState<CollectFrame | null>(null)
   const [step, setStep] = useState<Step>('POSITION')
   const [progress, setProgress] = useState(0)
@@ -222,7 +224,7 @@ function Capture({ token, label, attack, stepSeconds, stage, setStage, onBack, o
     const mimeType = pickMime()
     if (!(stream instanceof MediaStream) || !mimeType) { onError(t('This browser cannot record video (MediaRecorder is unavailable).')); return false }
     chunks.current = []
-    const rec = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: 1_500_000 })
+    const rec = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: 700_000 })
     rec.ondataavailable = (e) => e.data.size && chunks.current.push(e.data)
     rec.onstop = () => void upload(new Blob(chunks.current, { type: rec.mimeType || mimeType }))
     rec.start(500)

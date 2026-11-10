@@ -33,7 +33,7 @@ RUN chmod 755 /usr/local/bin/docker-entrypoint.sh \
 # Defaults suitable for a hosted single container. Override any of them with platform environment variables.
 #  - DATABASE_URL: empty = SQLite file on the /srv/data volume. Set a postgres:// URL to use PostgreSQL instead.
 #  - JWT_SECRET: REQUIRED (32+ random characters). The container refuses to start without it.
-ENV DATA_DIR=/srv/data FRONTEND_DIR=/srv/static ENVIRONMENT=production DOCS_ENABLED=false PORT=8000
+ENV DATA_DIR=/srv/data FRONTEND_DIR=/srv/static ENVIRONMENT=production DOCS_ENABLED=false PORT=8000 MALLOC_ARENA_MAX=2 OMP_NUM_THREADS=1 OPENCV_NUM_THREADS=1
 VOLUME /srv/data
 EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=5 \

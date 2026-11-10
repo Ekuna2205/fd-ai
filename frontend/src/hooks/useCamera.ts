@@ -14,7 +14,8 @@ function describe(err: unknown): string {
   }
 }
 
-export function useCamera() {
+/** `size`: preferred capture size. Smaller video means faster, lighter processing on small servers. */
+export function useCamera(size: { width: number; height: number } = { width: 1280, height: 720 }) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const streamRef = useRef<MediaStream | null>(null)
   const [status, setStatus] = useState<CameraStatus>('idle')
@@ -39,8 +40,8 @@ export function useCamera() {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: false,
-        video: wanted ? { deviceId: { exact: wanted }, width: { ideal: 1280 }, height: { ideal: 720 } }
-          : { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } },
+        video: wanted ? { deviceId: { exact: wanted }, width: { ideal: size.width }, height: { ideal: size.height } }
+          : { facingMode: 'user', width: { ideal: size.width }, height: { ideal: size.height } },
       })
       streamRef.current = stream
       const settings = stream.getVideoTracks()[0]?.getSettings()
@@ -54,7 +55,7 @@ export function useCamera() {
     } catch (e) {
       setStatus('error'); setError(describe(e))
     }
-  }, [])
+  }, [size.width, size.height])
 
   const switchCamera = useCallback(() => {
     if (devices.length < 2) return

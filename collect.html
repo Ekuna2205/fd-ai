@@ -128,7 +128,7 @@ const CONFIG = {
 const qs = new URLSearchParams(location.search)
 const API = (qs.get('api') || CONFIG.api).replace(/\/+$/, ''), TOKEN = qs.get('token') || CONFIG.token
 const MODELS = qs.get('models') || CONFIG.models
-const STEP_SECONDS = 6, MAX_RECORD_MS = 26000, TURN = 0.3, FLASH = ['#00F5FF', '#FF1A1A', '#FFF200', '#1AFF3C'], FLASH_MS = 750
+const STEP_SECONDS = 6, MAX_RECORD_MS = 24000, TURN = 0.3, FLASH = ['#00F5FF', '#FF1A1A', '#FFF200', '#1AFF3C'], FLASH_MS = 750
 const ATTACKS = { PRINTED_PHOTO: 'Хэвлэсэн зураг', PHONE_SCREEN: 'Утасны дэлгэц', COMPUTER_SCREEN: 'Компьютерын дэлгэц', REPLAY_VIDEO: 'Дахин тоглуулсан бичлэг', MASK: 'Маск', OTHER: 'Бусад' }
 const TEXT = { POSITION: 'Нүүрээ хүрээн дотор байрлуулна уу', TURN_RIGHT: 'Толгойгоо баруун тийш удаанаар эргүүлнэ үү', TURN_LEFT: 'Толгойгоо зүүн тийш удаанаар эргүүлнэ үү', CLOSER: 'Та камер луу бага зэрэг ойртоно уу', STILL: 'Нүүрээ хөдөлгөөнгүй байлгана уу' }
 const $ = (id) => document.getElementById(id)
@@ -173,7 +173,7 @@ async function start() {
   setOverlay('Камер асаж байна…'); $('badge').classList.add('hide'); $('hint').textContent = ''
   try {
     if (!navigator.mediaDevices?.getUserMedia) throw new Error('Камер ашиглахын тулд хуудсыг HTTPS хаягаар нээнэ үү.')
-    stream = await navigator.mediaDevices.getUserMedia({ audio: false, video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } } })
+    stream = await navigator.mediaDevices.getUserMedia({ audio: false, video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } } })
     const v = $('video'); v.srcObject = stream; await v.play().catch(() => {})
     setOverlay('Загвар ачааллаж байна…')
     await loadModels()
@@ -248,7 +248,7 @@ function startRecording() {
   const mime = ['video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm', 'video/mp4'].find((m) => window.MediaRecorder?.isTypeSupported(m))
   if (!mime) { fail('Энэ хөтөч бичлэг хийх боломжгүй байна.'); return false }
   chunks = []
-  recorder = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 1500000 })
+  recorder = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 700000 })
   recorder.ondataavailable = (e) => e.data.size && chunks.push(e.data)
   recorder.onstop = () => finish(new Blob(chunks, { type: recorder.mimeType || mime }))
   recorder.start(500); recStart = performance.now(); return true

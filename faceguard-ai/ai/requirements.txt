@@ -1,8 +1,0 @@
-# Training/evaluation only. Install the CPU build of PyTorch from https://pytorch.org if you have no GPU.
-torch>=2.3
-numpy
-opencv-python-headless
-scikit-learn
-onnx
-onnxscript  # required by torch.onnx.export on PyTorch >= 2.9
-onnxruntime
