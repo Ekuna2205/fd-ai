@@ -47,6 +47,15 @@ def _revoke_family(db: Session, family_id: str) -> None:
                .values(revoked_at=datetime.now(UTC)).execution_options(synchronize_session="fetch"))
 
 
+def _promote_if_listed(db: Session, user: User, ip: str | None) -> None:
+    """ADMIN_EMAILS: these accounts are always administrators (recovery when the first account is lost)."""
+    if user.email.lower() in get_settings().admin_email_set and user.role.name != RoleName.ADMINISTRATOR.value:
+        old = user.role.name
+        user.role = users.get_or_create_role(db, RoleName.ADMINISTRATOR)
+        audit_service.record(db, "user.role_changed", user_id=user.id, ip=ip, entity_type="user", entity_id=str(user.id),
+                             details={"from": old, "to": RoleName.ADMINISTRATOR.value, "reason": "ADMIN_EMAILS"})
+
+
 def register(db: Session, data: RegisterRequest, ip: str | None) -> AuthResponse:
     if db.get_bind().dialect.name == "postgresql":
         # Serialise registrations so two simultaneous first sign-ups cannot both become administrator.
@@ -68,6 +77,7 @@ def register(db: Session, data: RegisterRequest, ip: str | None) -> AuthResponse
         raise Conflict("An account with this email already exists.") from None
     audit_service.record(db, "auth.register", user_id=user.id, ip=ip, entity_type="user", entity_id=str(user.id),
                          details={"role": role.name, "bootstrap_admin": first_user})
+    _promote_if_listed(db, user, ip)
     return _issue(db, user)
 
 
@@ -86,6 +96,7 @@ def login(db: Session, data: LoginRequest, ip: str | None) -> AuthResponse:
         user.password_hash = security.hash_password(data.password)
     user.last_login_at = datetime.now(UTC)
     audit_service.record(db, "auth.login", user_id=user.id, ip=ip)
+    _promote_if_listed(db, user, ip)
     return _issue(db, user)
 
 

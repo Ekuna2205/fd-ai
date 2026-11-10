@@ -1,5 +1,5 @@
 import {
-  Boxes, Database, FileBarChart, History, LayoutDashboard, ScanFace, ScanLine, Settings, ShieldCheck, Upload, type LucideIcon,
+  Boxes, Camera, Database, FileBarChart, History, LayoutDashboard, ScanFace, ScanLine, Settings, ShieldCheck, Upload, type LucideIcon,
 } from 'lucide-react'
 import type { Role } from '@/types/auth'
 
@@ -15,6 +15,7 @@ export const navGroups: NavGroup[] = [
     { to: '/reports', label: 'Reports', icon: FileBarChart },
   ] },
   { label: 'Verify', items: [
+    { to: '/camera', label: 'Record with camera', icon: Camera },
     { to: '/verify', label: 'Live verification', icon: ScanFace, roles: VERIFIERS },
     { to: '/challenge', label: 'Liveness challenge', icon: ScanLine, roles: VERIFIERS },
     { to: '/uploads', label: 'Upload', icon: Upload, roles: VERIFIERS },

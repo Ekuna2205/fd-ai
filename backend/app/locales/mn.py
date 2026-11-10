@@ -133,6 +133,7 @@ SENTENCES: dict[str, str] = {
     # --- public collection ---
     "This collection link is not valid or has been turned off.": "Энэ цуглуулах холбоос хүчингүй эсвэл хаагдсан байна.",
     "Thank you!": "Баярлалаа!",
+    "No collection link is open yet.": "Одоогоор нээлттэй цуглуулах холбоос алга.",
     "Your recording was added.": "Таны бичлэг нэмэгдлээ.",
     "Invalid participant id.": "Оролцогчийн ID буруу байна.",
     "Choose how you tried to deceive the camera.": "Камерыг хэрхэн хуурахыг оролдсоноо сонгоно уу.",

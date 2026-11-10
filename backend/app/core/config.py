@@ -45,6 +45,9 @@ class Settings(BaseSettings):
     smtp_ssl: bool = False  # implicit TLS (port 465); mutually exclusive with STARTTLS
 
     cors_origins: str = "http://localhost:5173"
+    # Comma-separated e-mails that are always administrators (promoted at sign-up / sign-in). Recovery path when the
+    # first account is lost or someone else registered first.
+    admin_emails: str = ""
     registration_enabled: bool = True
     rate_limit_auth_per_minute: int = Field(10, ge=0)  # 0 disables rate limiting
     rate_limit_detect_per_minute: int = Field(600, ge=0)  # live preview frames (~4/s)
@@ -125,6 +128,10 @@ class Settings(BaseSettings):
     @property
     def is_production(self) -> bool:
         return self.environment.lower() == "production"
+
+    @property
+    def admin_email_set(self) -> set[str]:
+        return {e.strip().lower() for e in self.admin_emails.split(",") if e.strip()}
 
     @property
     def cors_origin_list(self) -> list[str]:

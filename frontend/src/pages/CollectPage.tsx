@@ -51,6 +51,11 @@ function participantId(): string {
 
 export default function CollectPage() {
   const { token = '' } = useParams()
+  return <CollectFlow token={token} />
+}
+
+/** The whole participant flow. `embedded`: shown inside the signed-in app layout (no own header). */
+export function CollectFlow({ token, embedded = false }: { token: string; embedded?: boolean }) {
   const { t, setLang } = useT()
   const info = useQuery({ queryKey: ['collect', token], queryFn: () => getCollectInfo(token), retry: false })
   const [stage, setStage] = useState<Stage>('label')
@@ -60,17 +65,19 @@ export default function CollectPage() {
   const [result, setResult] = useState<CollectResult | null>(null)
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => { if (!hasSavedLang()) setLang('mn', false) }, [setLang]) // participants are addressed in Mongolian first
+  useEffect(() => { if (!embedded && !hasSavedLang()) setLang('mn', false) }, [embedded, setLang]) // participants are addressed in Mongolian first
 
   const ready = label === 'REAL' || (label === 'FAKE' && !!attack)
   const home = () => { setStage('label'); setResult(null); setError(null) }
 
   return (
-    <div className="min-h-dvh bg-bg text-fg">
-      <header className="mx-auto flex max-w-md items-center justify-between px-4 py-3">
-        <Logo compact /><LanguageSwitch />
-      </header>
-      <main className="mx-auto max-w-md px-4 pb-10">
+    <div className={embedded ? '' : 'min-h-dvh bg-bg text-fg'}>
+      {!embedded && (
+        <header className="mx-auto flex max-w-md items-center justify-between px-4 py-3">
+          <Logo compact /><LanguageSwitch />
+        </header>
+      )}
+      <main className={embedded ? 'mx-auto max-w-md pb-6' : 'mx-auto max-w-md px-4 pb-10'}>
         {info.isLoading && <Centered><Loader2 className="size-6 animate-spin text-primary" /></Centered>}
         {info.isError && (
           <Centered>

@@ -16,12 +16,16 @@ from typing import Literal
 import cv2
 from fastapi import APIRouter, Depends, File, Form, Request, UploadFile
 
-from app.api.deps import DbSession, client_ip
+from sqlalchemy import select
+
+from app.api.deps import CurrentUser, DbSession, client_ip
 from app.api.routes.datasets import _mapped, _validator, get_store
 from app.core.config import get_settings
 from app.core.errors import AppError, NotFound
 from app.core.i18n import tr
 from app.core.rate_limit import limiter
+from app.models.enums import RoleName
+from app.models.user import Role, User
 from app.services import audit_service
 from app.services import dataset_store as store_mod
 from app.services.face import media
@@ -58,6 +62,39 @@ def _dataset(token: str) -> dict:
     if meta is None:
         raise NotFound("This collection link is not valid or has been turned off.")
     return meta
+
+
+DEFAULT_NAME = "Үндсэн цуглуулга"  # "Main collection"
+
+
+@router.get("/default", dependencies=[Depends(ip_limit)])
+def default_link() -> dict:
+    """Token of the site's main camera page (the most recently opened collection link). No account needed."""
+    meta = get_store().latest_collection()
+    if meta is None:
+        raise NotFound("No collection link is open yet.")
+    return {"token": meta["collect"]["token"], "name": meta["name"]}
+
+
+@router.post("/default", dependencies=[Depends(ip_limit)])
+def ensure_default_link(user: CurrentUser, db: DbSession, request: Request) -> dict:
+    """Signed-in users (any role) open the camera page; if no collection link exists yet, one is created in a dataset
+    owned by the first administrator, so the camera works out of the box."""
+    meta = get_store().latest_collection()
+    if meta is None:
+        admin = db.scalar(select(User).join(User.role).where(Role.name == RoleName.ADMINISTRATOR.value)
+                          .order_by(User.created_at).limit(1))
+        owner = admin or user
+        with _mapped():
+            store = get_store()
+            mine = [d for d in store.list(str(owner.id)) if d["name"] == DEFAULT_NAME]
+            ds = mine[0] if mine else store.create(str(owner.id), DEFAULT_NAME, "Камераар цуглуулсан бичлэгүүд")
+            store.set_collection(str(owner.id), ds["id"], True)
+        audit_service.record(db, "dataset.collect_link", user_id=user.id, ip=client_ip(request), entity_type="dataset",
+                             entity_id=ds["id"], details={"enabled": True, "auto_default": True})
+        db.commit()
+        meta = get_store().latest_collection()
+    return {"token": meta["collect"]["token"], "name": meta["name"]}
 
 
 @router.get("/{token}", dependencies=[Depends(ip_limit)])

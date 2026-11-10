@@ -4,7 +4,7 @@ import { mn } from './mn'
 
 const INDIRECT = [
   // nav groups and items
-  'Monitor', 'Dashboard', 'Reports', 'Verify', 'Live verification', 'Liveness challenge', 'Upload', 'History', 'AI workspace', 'Models',
+  'Record with camera', 'Monitor', 'Dashboard', 'Reports', 'Verify', 'Live verification', 'Liveness challenge', 'Upload', 'History', 'AI workspace', 'Models',
   'Datasets', 'Account', 'Profile & settings', 'Administration',
   // AuthShell points, password rules, health pill
   'Liveness is its own check', 'Metadata, not faces', 'Built for human review', 'At least 10 characters', 'A letter', 'A number',

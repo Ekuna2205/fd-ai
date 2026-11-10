@@ -128,10 +128,27 @@ class DatasetStore:
             if enabled and (rotate or not col.get("token")):
                 col["token"] = secrets.token_urlsafe(18)
                 col["created_at"] = _now()
+            if enabled and not col.get("enabled"):
+                col["opened_at"] = __import__("time").time()  # newest open link = the site's main camera page
+            elif enabled and rotate:
+                col["opened_at"] = __import__("time").time()
             col["enabled"] = enabled
             meta["collect"] = col
             self._save(meta)
             return self._summary(meta)
+
+    def latest_collection(self) -> dict | None:
+        """The dataset whose collection link was turned on most recently (the site's main camera page)."""
+        best = None
+        for meta_path in self.root.glob("*/dataset.json"):
+            try:
+                meta = json.loads(meta_path.read_text(encoding="utf-8"))
+            except (OSError, json.JSONDecodeError):
+                continue
+            col = meta.get("collect") or {}
+            if col.get("enabled") and col.get("token") and (best is None or col.get("opened_at", 0) > best["collect"].get("opened_at", 0)):
+                best = meta
+        return best
 
     def find_by_token(self, token: str) -> dict | None:
         """The dataset whose ENABLED collection link has this token, else None. Constant-time comparison."""

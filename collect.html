@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="mn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>FaceGuard цуглуулга</title>
+<!--
+  FaceGuard AI — нэг файлтай өгөгдөл цуглуулах хуудас (collect.ekyc.mn маягийн).
+  * Нүүр илрүүлэлт хөтөч дотор (face-api.js, 68 цэг) ажилладаг тул сервер шаардлагагүй.
+  * Камер зөвхөн HTTPS (эсвэл localhost) дээр ажиллана: GitHub Pages, Render гэх мэт дээр байршуулна.
+  * FaceGuard сервер рүү илгээх бол хаягийн ард: ?api=https://faceguard-xxxx.onrender.com&token=ЦУГЛУУЛАХ_КОД
+    (эсвэл доорх CONFIG-д бичнэ). Тохируулаагүй бол бичлэгийг утсанд татаж авна.
+-->
+<style>
+  :root{--bg:#f5f6fa;--card:#fff;--fg:#141a2b;--muted:#5d6577;--border:#e1e5ee;--primary:#5b5bf0;--violet:#7c3aed;--ok:#0f9d63;--bad:#e11d48;--warn:#d97706}
+  *{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-tap-highlight-color:transparent}
+  main{max-width:440px;margin:0 auto;padding:16px 16px 40px;min-height:100dvh}
+  h1{font-size:22px;margin:8px 0 4px}h2{font-size:17px;margin:8px 0}
+  .muted{color:var(--muted);font-size:14px}.center{text-align:center}.hide{display:none!important}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:18px;box-shadow:0 2px 10px rgba(20,26,43,.05)}
+  .opt{display:flex;gap:14px;align-items:center;width:100%;text-align:left;background:var(--card);border:2px solid var(--border);border-radius:18px;padding:16px;margin-top:12px;font:inherit;color:inherit;cursor:pointer}
+  .opt .ic{width:48px;height:48px;border-radius:14px;display:grid;place-items:center;font-size:24px;flex:none}
+  .opt.real .ic{background:#e2f5ec}.opt.fake .ic{background:#fde4ea}
+  .opt.real[aria-checked=true]{border-color:var(--ok);background:#f2fbf7}.opt.fake[aria-checked=true]{border-color:var(--bad);background:#fff5f7}
+  .opt b{display:block;font-size:17px}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+  .chip{border:1px solid var(--border);background:var(--card);border-radius:999px;padding:7px 12px;font:inherit;font-size:14px;color:inherit;cursor:pointer}
+  .chip[aria-pressed=true]{border-color:var(--bad);color:var(--bad);background:#fff5f7}
+  .btn{display:block;width:100%;height:50px;border:0;border-radius:14px;margin-top:20px;font:inherit;font-weight:600;color:#fff;cursor:pointer;background:linear-gradient(90deg,#6366f1,#7c3aed);box-shadow:0 8px 20px rgba(99,102,241,.25)}
+  .btn:disabled{opacity:.4;cursor:default}.btn.blue{background:linear-gradient(90deg,#0ea5e9,#2563eb)}.btn.gray{background:#d7dbe4;color:var(--fg);box-shadow:none;margin-top:12px}
+  ol{padding-left:20px;margin:10px 0 0;color:var(--muted);font-size:14px}ol li{margin:6px 0}ol b{color:var(--fg)}
+  .consent{display:flex;gap:10px;align-items:flex-start;background:var(--bg);border-radius:12px;padding:12px;margin-top:14px;font-size:14px}
+  .consent input{width:18px;height:18px;margin-top:2px;accent-color:var(--primary)}
+  .pill{display:block;margin:4px auto 16px;border:0;background:#ecebff;color:#4f46e5;border-radius:999px;padding:7px 14px;font:inherit;font-size:13px;font-weight:600;cursor:pointer}
+  .oval{position:relative;margin:0 auto;width:74%;max-width:290px;aspect-ratio:3/4.6;border-radius:9999px;overflow:hidden;background:#000;box-shadow:0 12px 30px rgba(0,0,0,.18);outline:4px solid var(--border)}
+  .oval video{width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
+  .overlay{position:absolute;inset:0;display:grid;place-items:center;background:rgba(0,0,0,.82);color:#fff;font-size:14px;text-align:center;padding:24px}
+  .spin{width:34px;height:34px;border:3px solid rgba(165,180,252,.35);border-top-color:#a5b4fc;border-radius:50%;animation:s 1s linear infinite;margin:0 auto 12px}@keyframes s{to{transform:rotate(360deg)}}
+  .badge{position:absolute;left:18%;right:18%;top:7%;display:flex;flex-direction:column;gap:6px;align-items:center}
+  .badge p{margin:0;background:linear-gradient(180deg,#6366f1,#7c3aed);color:#fff;border-radius:12px;padding:8px 10px;font-size:13px;font-weight:600;text-align:center;box-shadow:0 6px 16px rgba(0,0,0,.25)}
+  .bar{width:100%;height:6px;border-radius:9px;background:rgba(255,255,255,.3);overflow:hidden}.bar i{display:block;height:100%;width:0;background:#818cf8;transition:width .2s}
+  .caption{margin-top:18px;text-align:center;font-weight:600}.hint{text-align:center;color:var(--warn);font-size:14px;margin-top:4px;min-height:20px}
+  .flash{position:fixed;inset:0;z-index:9;display:flex;justify-content:center;transition:background .1s}
+  .flash p{margin-top:18vh;color:#fff;font-size:22px;font-weight:700;text-align:center;padding:0 24px;text-shadow:0 1px 6px rgba(0,0,0,.55)}
+  .result{border:2px solid var(--primary)}.result.ok{border-color:var(--ok)}.result.bad{border-color:var(--bad)}.result.warn{border-color:var(--warn)}
+  .big{margin:12px 0;border:1px solid var(--border);border-radius:14px;padding:16px;text-align:center;font-size:32px;font-weight:800}
+  .row{border-left:4px solid var(--border);background:var(--bg);border-radius:10px;padding:8px 12px;margin-top:8px}
+  .row b{display:block;font-size:12px}.row span{font:12px ui-monospace,Menlo,monospace;color:var(--muted)}
+  .err{margin-top:14px;background:#fff1f3;border:1px solid #fecdd6;color:var(--bad);border-radius:12px;padding:12px;font-size:14px}
+  header{display:flex;align-items:center;gap:10px;margin-bottom:6px}header svg{width:34px;height:34px}
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="#111B2D"/><path d="M16 5 6 9v7c0 5.5 4.2 9.6 10 11 5.8-1.4 10-5.5 10-11V9L16 5Z" fill="none" stroke="#22D3EE" stroke-width="2"/><circle cx="16" cy="15" r="3" fill="#22D3EE"/></svg>
+    <b>FaceGuard AI</b>
+  </header>
+
+  <!-- 1. Шошго -->
+  <section id="s-label">
+    <h1>Шошгоны сонголт</h1>
+    <p class="muted" id="ds-name">Хуурамч нүүр илрүүлэх өгөгдөл цуглуулга</p>
+    <div role="radiogroup" aria-label="Шошгоны сонголт">
+      <button class="opt real" role="radio" aria-checked="false" data-label="REAL"><span class="ic">🙂</span><span><b>Бодит</b><span class="muted">Намайг сонгоно уу</span></span></button>
+      <button class="opt fake" role="radio" aria-checked="false" data-label="FAKE"><span class="ic">🖼️</span><span><b>Хуурамч</b><span class="muted">Зураг, бичлэг ашиглан хуурахыг оролдоно уу</span></span></button>
+    </div>
+    <div id="attack" class="hide" style="margin-top:14px">
+      <b style="font-size:14px">Камерт юу үзүүлэх вэ?</b>
+      <div class="chips" id="chips"></div>
+    </div>
+    <button class="btn" id="b-continue" disabled>Үргэлжлүүлэх</button>
+    <p class="muted center" id="label-hint">Үргэлжлүүлэхийн тулд дээрээс шошго сонгоно уу.</p>
+  </section>
+
+  <!-- 2. Эхлэхийн өмнө -->
+  <section id="s-intro" class="hide">
+    <h2 class="center" style="margin-top:16px">Эхлэхийн өмнө</h2>
+    <div class="card">
+      <div class="center" style="font-size:26px">📋</div>
+      <h2 class="center">Анхаарах зүйлс</h2>
+      <ol>
+        <li><b>Толгойгоо хөдөлгөхгүй</b> — Өнгөний сорилын үед нүүрээ тогтвортой байлгаарай.</li>
+        <li><b>Дэлгэцийн гэрэлтүүлгээ хамгийн ихээр тохируулах</b> — Ингэснээр өнгө ялгаруулалт болон зургийн чанар сайжирна.</li>
+        <li><b>Дэлгэц дээрх зааврыг дагах</b> — Хүссэн үед толгойгоо эргүүлж, ойртож, хөдөлгөөнгүй байна.</li>
+      </ol>
+      <label class="consent"><input type="checkbox" id="consent"><span>Энэ бичлэгийг миний сонгосон шошготой хамт хуурамч нүүр илрүүлэгчийг сургахад ашиглахыг зөвшөөрч байна. Миний нэр бүртгэгдэхгүй.</span></label>
+    </div>
+    <button class="btn" id="b-start" disabled>Эхлүүлэх</button>
+    <button class="btn gray" id="b-back1">Буцах</button>
+    <div class="err hide" id="intro-err"></div>
+  </section>
+
+  <!-- 3. Камер -->
+  <section id="s-cam" class="hide" aria-live="polite">
+    <button class="pill" id="b-pill">‹ Та яг одоо <span id="pill-label">Бодит</span> хуудсанд байна</button>
+    <div class="oval">
+      <video id="video" playsinline muted></video>
+      <div class="badge hide" id="badge"><p id="badge-text"></p><div class="bar"><i id="bar"></i></div></div>
+      <div class="overlay" id="overlay"><div><div class="spin"></div><span id="overlay-text">Камер асаж байна…</span></div></div>
+    </div>
+    <p class="caption" id="caption">Камер асаж байна…</p>
+    <p class="hint" id="hint"></p>
+  </section>
+
+  <!-- 4. Үр дүн -->
+  <section id="s-result" class="hide">
+    <div class="card result" id="r-card">
+      <h2 class="center" id="r-title">Бичлэг хадгалагдлаа</h2>
+      <div class="big" id="r-big">—</div>
+      <div id="r-rows"></div>
+    </div>
+    <button class="btn blue hide" id="b-download">Бичлэг татах</button>
+    <button class="btn blue" id="b-retry">Дахин оролдох</button>
+    <button class="btn gray" id="b-home">Нүүр хуудас</button>
+  </section>
+</main>
+<div class="flash hide" id="flash"><p>Нүүрээ хөдөлгөөнгүй барина уу</p></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.15/dist/face-api.js"></script>
+<script>
+// ---- тохиргоо ---------------------------------------------------------------------------------------------------
+const CONFIG = {
+  api: '',    // жишээ: 'https://faceguard-apq2.onrender.com'
+  token: '',  // FaceGuard → Өгөгдлийн сан → Цуглуулах холбоосын төгсгөлийн код
+  models: 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.15/model/',
+}
+const qs = new URLSearchParams(location.search)
+const API = (qs.get('api') || CONFIG.api).replace(/\/+$/, ''), TOKEN = qs.get('token') || CONFIG.token
+const MODELS = qs.get('models') || CONFIG.models
+const STEP_SECONDS = 6, MAX_RECORD_MS = 26000, TURN = 0.3, FLASH = ['#00F5FF', '#FF1A1A', '#FFF200', '#1AFF3C'], FLASH_MS = 750
+const ATTACKS = { PRINTED_PHOTO: 'Хэвлэсэн зураг', PHONE_SCREEN: 'Утасны дэлгэц', COMPUTER_SCREEN: 'Компьютерын дэлгэц', REPLAY_VIDEO: 'Дахин тоглуулсан бичлэг', MASK: 'Маск', OTHER: 'Бусад' }
+const TEXT = { POSITION: 'Нүүрээ хүрээн дотор байрлуулна уу', TURN_RIGHT: 'Толгойгоо баруун тийш удаанаар эргүүлнэ үү', TURN_LEFT: 'Толгойгоо зүүн тийш удаанаар эргүүлнэ үү', CLOSER: 'Та камер луу бага зэрэг ойртоно уу', STILL: 'Нүүрээ хөдөлгөөнгүй байлгана уу' }
+const $ = (id) => document.getElementById(id)
+const show = (id) => ['s-label', 's-intro', 's-cam', 's-result'].forEach((s) => $(s).classList.toggle('hide', s !== id))
+const clamp01 = (v) => Math.max(0, Math.min(1, v))
+
+// ---- 1. шошго -----------------------------------------------------------------------------------------------------
+let label = null, attack = null
+for (const [k, v] of Object.entries(ATTACKS)) {
+  const b = document.createElement('button'); b.className = 'chip'; b.textContent = v; b.setAttribute('aria-pressed', 'false')
+  b.onclick = () => { attack = k; document.querySelectorAll('.chip').forEach((c) => c.setAttribute('aria-pressed', String(c === b))); refreshLabel() }
+  $('chips').appendChild(b)
+}
+document.querySelectorAll('.opt').forEach((o) => o.onclick = () => {
+  label = o.dataset.label
+  document.querySelectorAll('.opt').forEach((x) => x.setAttribute('aria-checked', String(x === o)))
+  $('attack').classList.toggle('hide', label !== 'FAKE'); refreshLabel()
+})
+function refreshLabel() {
+  const ok = label === 'REAL' || (label === 'FAKE' && attack)
+  $('b-continue').disabled = !ok
+  $('label-hint').textContent = ok ? '' : label === 'FAKE' ? 'Камерт юу үзүүлэхээ сонгоно уу.' : 'Үргэлжлүүлэхийн тулд дээрээс шошго сонгоно уу.'
+}
+$('b-continue').onclick = () => { $('intro-err').classList.add('hide'); show('s-intro') }
+$('consent').onchange = (e) => { $('b-start').disabled = !e.target.checked }
+$('b-back1').onclick = () => show('s-label')
+if (API && TOKEN) fetch(`${API}/api/collect/${TOKEN}`, { headers: { 'Accept-Language': 'mn' } }).then((r) => r.ok ? r.json() : null)
+  .then((d) => { if (d?.name) $('ds-name').textContent = d.name }).catch(() => {})
+
+// ---- 2-3. камер, алхмууд --------------------------------------------------------------------------------------------
+let stream = null, recorder = null, chunks = [], recStart = 0, steps = [], step = 'POSITION', stepStart = 0, held = 0, base = null
+let loop = 0, finished = false, modelsReady = null, lastBlob = null
+const loadModels = () => modelsReady ??= Promise.all([
+  faceapi.nets.tinyFaceDetector.loadFromUri(MODELS), faceapi.nets.faceLandmark68TinyNet.loadFromUri(MODELS)])
+
+$('b-start').onclick = start
+$('b-pill').onclick = () => { stop(); show('s-label') }
+async function start() {
+  show('s-cam'); finished = false; step = 'POSITION'; held = 0; base = null
+  steps = Math.random() < 0.5 ? ['TURN_RIGHT', 'TURN_LEFT', 'CLOSER', 'STILL'] : ['TURN_LEFT', 'TURN_RIGHT', 'CLOSER', 'STILL']
+  $('pill-label').textContent = label === 'REAL' ? 'Бодит' : 'Хуурамч'
+  setOverlay('Камер асаж байна…'); $('badge').classList.add('hide'); $('hint').textContent = ''
+  try {
+    if (!navigator.mediaDevices?.getUserMedia) throw new Error('Камер ашиглахын тулд хуудсыг HTTPS хаягаар нээнэ үү.')
+    stream = await navigator.mediaDevices.getUserMedia({ audio: false, video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } } })
+    const v = $('video'); v.srcObject = stream; await v.play().catch(() => {})
+    setOverlay('Загвар ачааллаж байна…')
+    await loadModels()
+  } catch (e) {
+    stop(); show('s-intro')
+    const msg = e?.name === 'NotAllowedError' ? 'Камерын зөвшөөрөл олгогдоогүй. Хөтчийн тохиргооноос камерыг зөвшөөрөөд дахин оролдоно уу.'
+      : e?.name === 'NotFoundError' ? 'Энэ төхөөрөмжөөс камер олдсонгүй.' : (e?.message || 'Камерыг асааж чадсангүй.')
+    $('intro-err').textContent = msg; $('intro-err').classList.remove('hide'); return
+  }
+  $('overlay').classList.add('hide'); $('badge').classList.remove('hide'); setStep('POSITION')
+  stepStart = performance.now(); tick()
+}
+function setOverlay(t) { $('overlay').classList.remove('hide'); $('overlay-text').textContent = t; $('caption').textContent = t }
+function setStep(s) { step = s; $('badge-text').textContent = TEXT[s]; $('caption').textContent = TEXT[s]; setProgress(0) }
+function setProgress(p) { $('bar').style.width = `${p * 100}%` }
+
+async function tick() {
+  if (finished || !stream) return
+  const v = $('video')
+  if (v.readyState >= 2) {
+    try {
+      const faces = await faceapi.detectAllFaces(v, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.5 })).withFaceLandmarks(true)
+      advance(faces, v.videoWidth, v.videoHeight)
+    } catch { /* алгасна */ }
+  }
+  loop = setTimeout(tick, 120)
+}
+
+function advance(faces, W, H) {
+  $('hint').textContent = faces.length === 0 ? 'Нүүр олдсонгүй. Камер луу харна уу.' : faces.length > 1 ? 'Кадрт зөвхөн нэг хүн байх ёстой.' : ''
+  const elapsed = (performance.now() - stepStart) / 1000
+  const f = faces.length === 1 ? faces[0] : null
+  const box = f && { x: f.detection.box.x / W, y: f.detection.box.y / H, w: f.detection.box.width / W, h: f.detection.box.height / H }
+  if (step === 'POSITION') {
+    if (!box) { held = 0; setProgress(0); return }
+    const cx = box.x + box.w / 2, cy = box.y + box.h / 2
+    held = Math.abs(cx - 0.5) < 0.18 && Math.abs(cy - 0.5) < 0.22 && box.w > 0.18 ? held + 1 : 0
+    setProgress(clamp01(held / 5))
+    if (held >= 5 && startRecording()) next()
+    return
+  }
+  if (elapsed > STEP_SECONDS) { next(); return } // хуурамч оролдлого бүх алхмыг хийж чадахгүй байж болно: гацахгүй
+  if (!f) return
+  if (step === 'TURN_RIGHT' || step === 'TURN_LEFT') {
+    const p = f.landmarks.positions // 68 цэг: 0 = зүүн эрүү (зураг дээр), 16 = баруун, 30 = хамрын үзүүр
+    const l = p[0].x, r = p[16].x, yaw = r - l > 0 ? ((p[30].x - l) / (r - l) - 0.5) * 2 : 0
+    const want = step === 'TURN_LEFT' ? 1 : -1 // толин бус камерын зураг дээр хүний ЗҮҮН тал = +yaw
+    const prog = clamp01((yaw * want) / TURN); setProgress(prog)
+    held = prog >= 1 ? held + 1 : 0
+    if (held >= 2) next()
+  } else if (step === 'CLOSER') {
+    base ??= { w: box.w }
+    const target = Math.min(0.9, Math.max(base.w * 1.3, base.w + 0.08))
+    const prog = clamp01((box.w - base.w) / (target - base.w)); setProgress(prog)
+    if (prog >= 1) next()
+  } else if (step === 'STILL') {
+    const cx = box.x + box.w / 2, cy = box.y + box.h / 2
+    base ??= { cx, cy, t: performance.now() }
+    if (Math.hypot(cx - base.cx, cy - base.cy) > 0.06) base = { cx, cy, t: performance.now() }
+    const prog = clamp01((performance.now() - base.t) / 1500); setProgress(prog)
+    if (prog >= 1) next()
+  }
+}
+
+function next() {
+  held = 0; base = null
+  if (!steps.length || performance.now() - recStart > MAX_RECORD_MS) { runFlash(); return }
+  setStep(steps.shift()); stepStart = performance.now()
+}
+
+function startRecording() {
+  const mime = ['video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm', 'video/mp4'].find((m) => window.MediaRecorder?.isTypeSupported(m))
+  if (!mime) { fail('Энэ хөтөч бичлэг хийх боломжгүй байна.'); return false }
+  chunks = []
+  recorder = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 1500000 })
+  recorder.ondataavailable = (e) => e.data.size && chunks.push(e.data)
+  recorder.onstop = () => finish(new Blob(chunks, { type: recorder.mimeType || mime }))
+  recorder.start(500); recStart = performance.now(); return true
+}
+
+function runFlash() {
+  if (finished) return
+  finished = true; clearTimeout(loop)
+  const el = $('flash'); el.classList.remove('hide')
+  FLASH.forEach((c, i) => setTimeout(() => { el.style.background = c }, i * FLASH_MS))
+  setTimeout(() => { el.classList.add('hide'); recorder?.state === 'recording' && recorder.stop() }, FLASH.length * FLASH_MS + 300)
+}
+
+function stop() { finished = true; clearTimeout(loop); stream?.getTracks().forEach((t) => t.stop()); stream = null }
+function fail(msg) { stop(); show('s-intro'); $('intro-err').textContent = msg; $('intro-err').classList.remove('hide') }
+
+function participant() {
+  try { let id = localStorage.getItem('faceguard.participant'); if (id && /^[a-f0-9]{16}$/.test(id)) return id
+    id = [...crypto.getRandomValues(new Uint8Array(8))].map((b) => b.toString(16).padStart(2, '0')).join(''); localStorage.setItem('faceguard.participant', id); return id
+  } catch { return [...crypto.getRandomValues(new Uint8Array(8))].map((b) => b.toString(16).padStart(2, '0')).join('') }
+}
+
+// ---- 4. илгээх / үр дүн ------------------------------------------------------------------------------------------
+async function finish(blob) {
+  lastBlob = blob
+  setOverlay('Үр дүн боловсруулж байна…'); $('badge').classList.add('hide')
+  let res = null, err = null
+  if (API && TOKEN) {
+    const fd = new FormData()
+    fd.append('video', blob, blob.type.includes('mp4') ? 'recording.mp4' : 'recording.webm')
+    fd.append('label', label); fd.append('consent', 'true'); fd.append('participant', participant())
+    if (label === 'FAKE') fd.append('attack_type', attack)
+    try {
+      const r = await fetch(`${API}/api/collect/${TOKEN}`, { method: 'POST', body: fd, headers: { 'Accept-Language': 'mn' } })
+      const body = await r.json().catch(() => ({}))
+      if (r.ok) res = body; else err = body.detail || `Сервер алдаа буцаалаа (${r.status}).`
+    } catch { err = 'Сервертэй холбогдож чадсангүй. Бичлэгээ татаж аваад дахин оролдоно уу.' }
+  }
+  stop(); renderResult(res, err)
+}
+
+function renderResult(res, err) {
+  const s = res?.score, card = $('r-card'), rows = []
+  card.className = 'card result ' + (err ? 'bad' : !s ? '' : s.status === 'REAL' ? 'ok' : s.status === 'FAKE' ? 'bad' : 'warn')
+  $('r-title').textContent = err ? 'Илгээж чадсангүй' : !s ? (res ? 'Бичлэг хадгалагдлаа' : 'Бичлэг бэлэн боллоо')
+    : s.status === 'REAL' ? 'Бодит хүн илэрлээ' : s.status === 'FAKE' ? 'Хуурамч илэрлээ' : 'Тодорхойгүй'
+  $('r-big').textContent = s ? `${(s.bona_fide_score * 100).toFixed(2)}%` : res ? String(res.added) : `${(lastBlob.size / 1048576).toFixed(1)} MB`
+  if (s) rows.push(['Оноо', `${(s.bona_fide_score * 100).toFixed(2)}% (босго ${s.threshold.toFixed(2)})`])
+  if (res) rows.push(['Хадгалсан кадр', String(res.added)], ['Төлөв', res.message])
+  if (err) rows.push(['Алдаа', err])
+  if (!API || !TOKEN) rows.push(['Төлөв', 'Сервер тохируулаагүй тул бичлэгийг утсандаа татаж авна уу.'])
+  rows.push(['Төрөл', label === 'REAL' ? 'Амьд хүн' : ATTACKS[attack] || 'Хуурамч'])
+  if (s) rows.push(['Модель', s.model])
+  $('r-rows').innerHTML = ''
+  for (const [k, v] of rows) { const d = document.createElement('div'); d.className = 'row'; const b = document.createElement('b'); b.textContent = k + ':'; const sp = document.createElement('span'); sp.textContent = v; d.append(b, sp); $('r-rows').appendChild(d) }
+  $('b-download').classList.toggle('hide', !!res)
+  show('s-result')
+}
+$('b-download').onclick = () => {
+  if (!lastBlob) return
+  const a = document.createElement('a'); a.href = URL.createObjectURL(lastBlob)
+  a.download = `faceguard-${label.toLowerCase()}-${Date.now()}.${lastBlob.type.includes('mp4') ? 'mp4' : 'webm'}`; a.click()
+  setTimeout(() => URL.revokeObjectURL(a.href), 5000)
+}
+$('b-retry').onclick = () => start()
+$('b-home').onclick = () => show('s-label')
+</script>
+</body>
+</html>

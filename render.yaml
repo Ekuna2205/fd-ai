@@ -14,6 +14,8 @@ services:
         fromDatabase:
           name: faceguard-db
           property: connectionString
+      - key: ADMIN_EMAILS
+        sync: false                  # your e-mail: that account becomes administrator at its next sign-in
       - key: REGISTRATION_ENABLED
         value: "true"                # set to "false" after you have created your accounts
     # Datasets are files. On the free plan they are lost on every redeploy; on a paid plan uncomment this disk.

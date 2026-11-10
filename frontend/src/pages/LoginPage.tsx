@@ -37,7 +37,7 @@ export default function LoginPage() {
 
   return (
     <AuthShell title={t('Sign in')} subtitle={t('Use your FaceGuard AI account.')}
-      footer={<>{t('No account yet?')} <Link to="/register" className="font-medium text-primary hover:underline">{t('Create one')}</Link></>}>
+      footer={<>{t('No account yet?')} <Link to="/register" className="font-medium text-primary hover:underline">{t('Create one')}</Link><span className="mt-3 block"><Link to="/start" className="font-medium text-primary hover:underline">{t('Record with camera without an account')} →</Link></span></>}>
       <form onSubmit={onSubmit} noValidate className="space-y-4">
         {formError && <div role="alert" className="rounded-lg border border-danger/30 bg-danger/10 px-3 py-2.5 text-sm text-danger">{formError}</div>}
         <Field label={t('Email')} type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} error={errors.email} autoFocus />

@@ -61,4 +61,12 @@ export const collect: Record<string, string> = {
   'New link created. The old link no longer works.': 'Шинэ холбоос үүслээ. Хуучин холбоос ажиллахаа больсон.',
   'Collection link is on.': 'Цуглуулах холбоос нээгдлээ.',
   'Collection link is off.': 'Цуглуулах холбоос хаагдлаа.',
+  'Record with camera': 'Камераар бичих',
+  'Choose Real or Fake, then follow the instructions in the oval frame. The recording is added to the training data.':
+    'Бодит эсвэл Хуурамч гэж сонгоод зууван хүрээн доторх зааврыг дагана уу. Бичлэг сургалтын өгөгдөлд нэмэгдэнэ.',
+  'Camera page unavailable': 'Камерын хуудсыг нээж чадсангүй',
+  'No collection link is open yet.': 'Одоогоор нээлттэй цуглуулах холбоос алга.',
+  'An administrator opens one under Datasets → Collection link, or by visiting “Record with camera”.':
+    'Админ Өгөгдлийн сан → Цуглуулах холбоос хэсгээс, эсвэл “Камераар бичих” цэсээр нээнэ.',
+  'Record with camera without an account': 'Бүртгэлгүйгээр камераар бичих',
 }

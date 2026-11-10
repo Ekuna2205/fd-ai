@@ -138,3 +138,35 @@ def test_active_model_score_is_returned(client, res_a, tmp_path):
     token = _link(client, res_a["h"], ds)
     b = _submit(client, token, _video(tmp_path)).json()
     assert b["score"]["status"] == "REAL" and b["score"]["bona_fide_score"] > 0.8
+
+
+def test_camera_page_default_link_is_created_for_any_signed_in_user(client, admin, viewer):
+    assert client.get("/api/collect/default").status_code == 404
+    assert client.post("/api/collect/default").status_code == 401
+    r = client.post("/api/collect/default", headers=viewer["h"])
+    assert r.status_code == 200, r.text
+    token = r.json()["token"]
+    assert client.get("/api/collect/default").json()["token"] == token  # now public
+    assert client.post("/api/collect/default", headers=viewer["h"]).json()["token"] == token  # idempotent
+    owned = client.get("/api/datasets", headers=admin["h"]).json()
+    assert [d["name"] for d in owned] == ["Үндсэн цуглуулга"] and owned[0]["collect"]["enabled"]
+
+
+def test_latest_opened_link_is_the_default(client, res_a):
+    a = make(client, res_a["h"], "a")
+    b = make(client, res_a["h"], "b")
+    _link(client, res_a["h"], a)
+    tb = _link(client, res_a["h"], b)
+    assert client.get("/api/collect/default").json()["token"] == tb
+
+
+def test_admin_emails_are_promoted_on_sign_in(client, admin, monkeypatch):
+    from tests.conftest import PASSWORD, register
+    register(client, "boss@example.com", "Boss Person")
+    me = client.post("/api/auth/login", json={"email": "boss@example.com", "password": PASSWORD}).json()["user"]
+    assert me["role"] == "viewer"
+    monkeypatch.setattr(get_settings(), "admin_emails", "Boss@Example.com, other@example.com")
+    me = client.post("/api/auth/login", json={"email": "boss@example.com", "password": PASSWORD}).json()["user"]
+    assert me["role"] == "administrator"
+    new = register(client, "other@example.com", "Other").json()["user"]
+    assert new["role"] == "administrator"

@@ -26,3 +26,8 @@ export function submitCollect(token: string, video: Blob, label: CollectLabel, p
 
 export const setCollection = (datasetId: string, enabled: boolean, rotate = false) =>
   api.put(`/datasets/${datasetId}/collect`, { enabled, rotate }).then((r) => r.data)
+
+/** The site's main camera page: the most recently opened collection link (public). */
+export const getDefaultCollect = () => api.get<{ token: string; name: string }>('/collect/default').then((r) => r.data)
+/** Signed-in users: creates the main collection link when none exists yet. */
+export const ensureDefaultCollect = () => api.post<{ token: string; name: string }>('/collect/default').then((r) => r.data)

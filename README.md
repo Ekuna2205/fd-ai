@@ -23,6 +23,8 @@ dashboard, history, reports, dataset management and a model registry.
 | Datasets → training | ZIP export as full images or as **face crops** made by the same detector and crop the API uses at inference time |
 | Admin | Users (role, enable/disable), one-time password-reset links (no SMTP needed), audit-log viewer |
 | Data collection | Public collection link per dataset (like collect.ekyc.mn, with QR code): participants choose Real/Fake, then a guided phone-camera sequence (face in frame → turn right/left → move closer → hold still → colour flashes) is recorded; 8 single-face frames are added with the label, a pseudonymous person ID and the attack type. No account needed; if a model is active, the participant also sees its score |
+| Camera page | **Камераар бичих / Record with camera** in the menu for every signed-in user, and `/start` for visitors without an account: opens the newest collection link (created automatically if none exists). `collect.html` is the same flow as one standalone file (in-browser face detection; host it on GitHub Pages; add `?api=…&token=…` to send recordings to FaceGuard) |
+| Admin recovery | `ADMIN_EMAILS=you@example.com` (Render → Environment): that account becomes administrator at its next sign-in |
 | Languages | Mongolian and English (МН / EN switch in the header, on the sign-in page and in Settings; remembered per browser). API messages such as result explanations, quality hints, challenge instructions and errors follow the same language |
 | Platform | Dark/light theme, role-aware navigation, Docker Compose with Nginx gateway, HTTPS option |
 
