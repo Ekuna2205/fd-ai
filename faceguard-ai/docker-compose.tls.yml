@@ -1,0 +1,12 @@
+# HTTPS. Use together with the main file:
+#   docker compose -f docker-compose.yml -f docker-compose.tls.yml up -d
+# Also set GATEWAY_PORT=80 in .env so the HTTP->HTTPS redirect lands on the standard HTTPS port.
+# Put your certificate at ./certs/fullchain.pem and key at ./certs/privkey.pem (see README, "HTTPS").
+services:
+  nginx:
+    volumes:
+      - ./infrastructure/nginx/gateway-tls.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./infrastructure/nginx/snippets:/etc/nginx/snippets:ro
+      - ./certs:/etc/nginx/certs:ro
+    ports:
+      - "${GATEWAY_TLS_PORT:-443}:8443"

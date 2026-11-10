@@ -1,0 +1,50 @@
+@import 'tailwindcss';
+@import '@fontsource-variable/inter';
+
+@theme {
+  --font-sans: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
+  --color-bg: #080d18;
+  --color-sidebar: #0d1422;
+  --color-card: #111b2d;
+  --color-card-hover: #15213a;
+  --color-border: #1e2b44;
+  --color-primary: #22d3ee;
+  --color-secondary: #3b82f6;
+  --color-success: #10b981;
+  --color-danger: #ef4444;
+  --color-warning: #f59e0b;
+  --color-fg: #f8fafc;
+  --color-muted: #94a3b8;
+}
+
+html, body, #root { height: 100%; }
+body {
+  background: var(--color-bg);
+  color: var(--color-fg);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+::selection { background: color-mix(in srgb, var(--color-primary) 35%, transparent); }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+
+/* Light theme: only the tokens change, so every utility (bg-card, text-muted, ...) follows. */
+:root[data-theme='light'] {
+  --color-bg: #f4f6fa;
+  --color-sidebar: #ffffff;
+  --color-card: #ffffff;
+  --color-card-hover: #eef2f7;
+  --color-border: #dde3ec;
+  --color-primary: #0e7490;
+  --color-secondary: #2563eb;
+  --color-success: #047857;
+  --color-danger: #dc2626;
+  --color-warning: #b45309;
+  --color-fg: #0f172a;
+  --color-muted: #475569;
+  color-scheme: light;
+}
+:root { color-scheme: dark; }
+:root[data-theme='light'] .bg-black { background-color: #0f172a; } /* camera/preview wells stay dark in both themes */
